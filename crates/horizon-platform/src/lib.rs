@@ -14,5 +14,5 @@ pub use horizon_system as system;
 /// [`hooks::register`] it before the game starts (docs/layers.md, "How a Horizon crate plugs
 /// in"). The engine's dispatch side is not part of the API.
 pub mod hooks {
-    pub use horizon_hooks::{Hooks, Started, TooLate, register};
+    pub use horizon_hooks::{Frame, Hooks, Milestone, Started, TooLate, WorldLeft, register};
 }

@@ -18,15 +18,17 @@ pub fn main_with(mods: crate::mod_api::Mods) {
         horizon_client::options_ui::HORIZON_EXTRAS
             .store(false, std::sync::atomic::Ordering::Relaxed);
     }
-    horizon_client::telemetry::mark_start();
+    // The process's start, for the startup trace and the start's milestones.
+    horizon_client::spans::startup::init(std::time::Instant::now());
     // Opt-in telemetry keeps each crash report (docs/telemetry.md), whatever the mode.
     crash::on_report(horizon_client::telemetry::keep_crash);
-    // The "I'm playing" ping plugs in through the hooks, as a Horizon crate does; the official
-    // executable registers its own before calling this. No hook registers after this point.
+    // The "I'm playing" ping and the play session's performance summary plug in through the
+    // hooks, as a Horizon crate does; the official executable registers its own before calling
+    // this. No hook registers after this point.
     #[cfg(feature = "heartbeat")]
     let _ = horizon_hooks::register(&horizon_client::heartbeat::HOOKS);
+    let _ = horizon_hooks::register(&horizon_client::telemetry::HOOKS);
     horizon_hooks::engine::seal();
-    horizon_client::spans::startup::init(std::time::Instant::now());
     horizon_client::spans::trace::start_from_env();
     let args: Vec<String> = std::env::args().skip(1).collect();
     let game_args = args.iter().take_while(|a| *a != "--dedicated");
