@@ -27,6 +27,8 @@ pub fn main_with(mods: crate::mod_api::Mods) {
     // this. No hook registers after this point.
     #[cfg(feature = "heartbeat")]
     let _ = horizon_hooks::register(&horizon_client::heartbeat::HOOKS);
+    // horizon-extras: telemetry is Horizon's (docs/layers.md); without it no session is kept.
+    #[cfg(feature = "horizon-extras")]
     let _ = horizon_hooks::register(&horizon_client::telemetry::HOOKS);
     horizon_hooks::engine::seal();
     horizon_client::spans::trace::start_from_env();
