@@ -13,7 +13,7 @@ use std::sync::OnceLock;
 
 /// The anticheat's checks, called by the hub with itself (the watch taken out of it for the call).
 /// `i` is the guest's index in `hub.guests`.
-pub trait Watch: Send {
+pub trait Watch: Send + Sync {
     /// Whether the hub records the players' client ticks for the movement replay.
     fn records(&self) -> bool;
     /// How far, in blocks, a replayed tick may land from where the client said it went.
