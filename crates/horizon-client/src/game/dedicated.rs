@@ -179,33 +179,15 @@ pub(super) fn cached_user_by_id(id: u128) -> Option<NameAndId> {
     USER_CACHE.lock().unwrap().as_mut()?.get_by_id(id)
 }
 
-/// `server.toml`'s `[anticheat]`, beside server.properties when horizon-server runs the game; the
-/// default (on) without the file or the section, off (with an error logged) when the section is wrong.
-fn load_anticheat() -> horizon_anticheat::Config {
-    let Ok(text) = std::fs::read_to_string("server.toml") else {
-        return Default::default();
-    };
-    match horizon_anticheat::Config::from_server_toml(&text) {
-        Ok(config) => {
-            if config.enabled {
-                log(
-                    "INFO",
-                    "Anticheat on (server.toml [anticheat]; enabled = false turns it off)",
-                );
-            }
-            config
-        }
-        Err(e) => {
-            log(
-                "ERROR",
-                &format!("server.toml: {e}; the anticheat stays off"),
-            );
-            horizon_anticheat::Config {
-                enabled: false,
-                ..Default::default()
-            }
-        }
+/// `server.toml`'s `[anticheat]`, beside server.properties when horizon-server runs the game, through the
+/// anticheat the executable installed (`lan::hub::watch`): none without one.
+fn load_anticheat() -> Option<Box<dyn horizon_client::lan::hub::watch::Watch>> {
+    let text = std::fs::read_to_string("server.toml").ok();
+    let loaded = horizon_client::lan::hub::watch::load(text.as_deref());
+    for (level, line) in &loaded.log {
+        log(level, line);
     }
+    loaded.watch
 }
 
 /// `server.toml`'s `[chat_filter]` (docs/chat-filter.md), like `[anticheat]`: on by default, off (with an
